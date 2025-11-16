@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Space Tycoon</title>
+<link rel="manifest" href="manifest.json"/>
+<style>
+body {
+  background: #05051a;
+  color: #e8efff;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  margin: 0;
+  padding: 20px;
+  text-align: center;
+}
+h1 { margin-top: 10px; font-size: 32px; }
+
+.card {
+  background: #0f1530;
+  padding: 18px;
+  border-radius: 14px;
+  margin: 20px auto;
+  width: 90%;
+  max-width: 420px;
+  box-shadow: 0 0 18px rgba(0,0,0,0.4);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+button {
+  width: 90%;
+  max-width: 420px;
+  padding: 15px;
+  margin: 8px;
+  font-size: 18px;
+  border-radius: 10px;
+  border: none;
+  background: #42d3ff;
+  color: #001019;
+  font-weight: bold;
+}
+button:active { transform: scale(0.97); }
+.stat { font-size: 22px; margin-top: 10px; }
+
+.upgrade {
+  background: #16204a;
+  padding: 12px;
+  border-radius: 10px;
+  margin: 10px 0;
+  text-align: left;
+}
+.upgrade-title { font-size: 18px; font-weight: bold; }
+.upgrade-cost { font-size: 14px; color: #8fa3c7; }
+</style>
+</head>
+<body>
+
+<h1>🚀 Space Tycoon</h1>
+
+<div class="card">
+  <div class="stat">
+    Credits: <span id="credits">0</span>
+  </div>
+  <button onclick="mine()">Mine Asteroid (+1)</button>
+</div>
+
+<div class="card">
+  <h2>Upgrades</h2>
+
+  <div class="upgrade">
+    <div class="upgrade-title">Auto-Miner</div>
+    <div class="upgrade-cost">Generates +1/sec<br>Cost: <span id="minerCost">50</span></div>
+    <button onclick="buyMiner()">Buy Auto-Miner</button>
+  </div>
+
+  <div class="upgrade">
+    <div class="upgrade-title">Mine Drill Mk II</div>
+    <div class="upgrade-cost">Boost all mining by 2x<br>Cost: <span id="drillCost">500</span></div>
+    <button onclick="buyDrill()">Buy Drill Mk II</button>
+  </div>
+</div>
+
+<script>
+// GAME STATE
+let credits = Number(localStorage.getItem("credits") || 0);
+let miners = Number(localStorage.getItem("miners") || 0);
+let drillLevel = Number(localStorage.getItem("drill") || 1);
+
+let minerCost = 50;
+let drillCost = 500;
+
+// UPDATE UI
+function updateUI() {
+  document.getElementById("credits").textContent = credits;
+  document.getElementById("minerCost").textContent = minerCost;
+  document.getElementById("drillCost").textContent = drillCost;
+}
+
+// SAVE
+function saveGame() {
+  localStorage.setItem("credits", credits);
+  localStorage.setItem("miners", miners);
+  localStorage.setItem("drill", drillLevel);
+}
+
+// ACTIONS
+function mine() {
+  credits += 1 * drillLevel;
+  saveGame();
+  updateUI();
+}
+
+function buyMiner() {
+  if (credits >= minerCost) {
+    credits -= minerCost;
+    miners++;
+    minerCost = Math.floor(minerCost * 1.5);
+    saveGame();
+    updateUI();
+  }
+}
+
+function buyDrill() {
+  if (credits >= drillCost) {
+    credits -= drillCost;
+    drillLevel *= 2;
+    drillCost = Math.floor(drillCost * 2.5);
+    saveGame();
+    updateUI();
+  }
+}
+
+// AUTO-GENERATE
+setInterval(() => {
+  credits += miners * drillLevel;
+  saveGame();
+  updateUI();
+}, 1000);
+
+// INITIAL LOAD
+updateUI();
+
+// REGISTER SERVICE WORKER
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js");
+}
+</script>
+
+</body>
+</html>
