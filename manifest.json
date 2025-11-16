@@ -1,0 +1,9 @@
+{
+  "name": "Space Tycoon",
+  "short_name": "Tycoon",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#05051a",
+  "theme_color": "#05051a",
+  "icons": []
+}
