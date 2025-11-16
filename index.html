@@ -5,117 +5,623 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Space Tycoon</title>
 <link rel="manifest" href="manifest.json"/>
-<style>
-body {
-  background: #05051a;
-  color: #e8efff;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  margin: 0;
-  padding: 20px;
-  text-align: center;
-}
-h1 { margin-top: 10px; font-size: 32px; }
+<meta name="theme-color" content="#05051a"/>
 
-.card {
-  background: #0f1530;
-  padding: 18px;
-  border-radius: 14px;
-  margin: 20px auto;
-  width: 90%;
-  max-width: 420px;
-  box-shadow: 0 0 18px rgba(0,0,0,0.4);
+<style>
+:root {
+  --bg: #05051a;
+  --bg-soft: #0b1027;
+  --card: #121735;
+  --accent: #42d3ff;
+  --accent-soft: rgba(66,211,255,0.18);
+  --accent-strong: #2de1c2;
+  --text-main: #eef3ff;
+  --text-soft: #9aa6d8;
+  --danger: #ff6b81;
+}
+
+/* GLOBAL */
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  background: radial-gradient(circle at top, #182b66 0, #05051a 48%, #02010a 100%);
+  color: var(--text-main);
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+}
+.app {
+  width: 100%;
+  max-width: 480px;
+  height: 100vh;
+  padding: 14px 14px 60px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Animated stars background */
+.stars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(255,255,255,0.35) 1px, transparent 0),
+    radial-gradient(circle at 80% 10%, rgba(255,255,255,0.2) 1px, transparent 0),
+    radial-gradient(circle at 30% 80%, rgba(255,255,255,0.25) 1px, transparent 0);
+  background-size: 220px 220px, 260px 260px, 200px 200px;
+  opacity: 0.35;
+  animation: drift 28s linear infinite;
+}
+@keyframes drift {
+  0% { transform: translate3d(0,0,0); }
+  100% { transform: translate3d(-40px,-60px,0); }
+}
+
+/* LAYOUT */
+.main-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(160deg, rgba(255,255,255,0.03), transparent 40%),
+              var(--bg-soft);
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.75);
+  padding: 14px 14px 64px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* TOP BAR */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.logo-orb {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 30% 20%, #ffffff, #42d3ff 40%, #05051a 70%);
+  box-shadow: 0 0 20px rgba(66,211,255,0.9);
+  position: relative;
+}
+.logo-orb::after {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border-radius: inherit;
+  border: 2px solid rgba(2,5,30,0.8);
+}
+.title-block {
+  flex: 1;
+}
+.title-main {
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 0.04em;
+}
+.title-sub {
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
+/* STATS STRIP */
+.stats-strip {
+  display: flex;
+  gap: 8px;
+  margin: 4px 0 10px;
+}
+.stat-pill {
+  flex: 1;
+  background: radial-gradient(circle at top left, rgba(66,211,255,0.25), transparent 60%),
+              rgba(3,7,30,0.9);
+  border-radius: 999px;
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.stat-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+.stat-value {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* PROGRESS BAR */
+.progress-card {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
   border: 1px solid rgba(255,255,255,0.05);
 }
-button {
-  width: 90%;
-  max-width: 420px;
-  padding: 15px;
-  margin: 8px;
-  font-size: 18px;
-  border-radius: 10px;
-  border: none;
-  background: #42d3ff;
-  color: #001019;
-  font-weight: bold;
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--text-soft);
 }
-button:active { transform: scale(0.97); }
-.stat { font-size: 22px; margin-top: 10px; }
+.progress-header span strong { color: var(--accent-strong); }
+.progress-bar {
+  margin-top: 6px;
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  overflow: hidden;
+  position: relative;
+}
+.progress-fill {
+  width: 0%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), var(--accent-strong));
+  box-shadow: 0 0 18px rgba(66,211,255,0.7);
+  transition: width 0.25s ease-out;
+}
 
-.upgrade {
-  background: #16204a;
-  padding: 12px;
-  border-radius: 10px;
-  margin: 10px 0;
-  text-align: left;
+/* MINE BUTTON */
+.primary-action {
+  margin-top: 12px;
 }
-.upgrade-title { font-size: 18px; font-weight: bold; }
-.upgrade-cost { font-size: 14px; color: #8fa3c7; }
+.big-button {
+  width: 100%;
+  padding: 14px;
+  border-radius: 999px;
+  border: none;
+  background: radial-gradient(circle at top, #8df5ff, #42d3ff 40%, #2fbfe7 100%);
+  color: #001018;
+  font-size: 18px;
+  font-weight: 700;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.big-button:active {
+  transform: translateY(1px) scale(.98);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.8);
+}
+.big-button-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.1);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* SCROLL AREA */
+.scroll-area {
+  margin-top: 14px;
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* BUILDING CARDS */
+.section-title {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-soft);
+  margin-bottom: 4px;
+}
+.building-card {
+  background: radial-gradient(circle at top left, var(--accent-soft), transparent 55%),
+              var(--card);
+  border-radius: 16px;
+  padding: 10px 10px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.icon-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #27306b, #171c3e);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size: 22px;
+}
+.building-main { flex: 1; }
+.building-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.building-name {
+  font-size: 15px;
+  font-weight: 600;
+}
+.building-qty {
+  font-size: 13px;
+  color: var(--text-soft);
+}
+.building-sub {
+  font-size: 11px;
+  color: var(--text-soft);
+  margin-top: 2px;
+}
+.cost-row {
+  display:flex;
+  justify-content: space-between;
+  align-items:center;
+  margin-top: 6px;
+  font-size: 12px;
+}
+.cost-row span strong {
+  color: var(--accent);
+}
+
+/* Small buy button */
+.buy-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  background: linear-gradient(135deg,#42d3ff,#2de1c2);
+  color:#001019;
+}
+.buy-btn:active { transform: scale(.95); }
+
+/* FOOTER NAV */
+.bottom-nav {
+  position: absolute;
+  inset-inline: 18px;
+  bottom: 10px;
+  height: 42px;
+  border-radius: 999px;
+  background: rgba(3,7,30,0.96);
+  border: 1px solid rgba(255,255,255,0.08);
+  display:flex;
+  align-items:center;
+  justify-content:space-around;
+  z-index: 2;
+}
+.nav-item {
+  flex:1;
+  text-align:center;
+  font-size:11px;
+  color:var(--text-soft);
+}
+.nav-item span {
+  display:block;
+  font-size:16px;
+}
+.nav-item.active {
+  color: var(--accent);
+}
+
+/* SMALL TEXT */
+.badge {
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  padding:3px 8px;
+  border-radius:999px;
+  background:rgba(0,0,0,0.4);
+  font-size:10px;
+  color:var(--text-soft);
+}
+.dot {
+  width:8px;
+  height:8px;
+  border-radius:999px;
+  background:var(--accent);
+  box-shadow:0 0 8px rgba(66,211,255,0.9);
+}
+
+/* SCROLLBAR (iOS still mostly ignores but fine for others) */
+.scroll-area::-webkit-scrollbar { width: 4px; }
+.scroll-area::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.25);
+  border-radius: 999px;
+}
 </style>
 </head>
 <body>
+<div class="app">
+  <div class="stars"></div>
 
-<h1>🚀 Space Tycoon</h1>
+  <div class="main-card">
+    <!-- TOP BAR -->
+    <div class="topbar">
+      <div class="logo-orb"></div>
+      <div class="title-block">
+        <div class="title-main">Space Tycoon</div>
+        <div class="title-sub">Build your idle galactic empire</div>
+      </div>
+      <div class="badge">
+        <span class="dot"></span> Idle running
+      </div>
+    </div>
 
-<div class="card">
-  <div class="stat">
-    Credits: <span id="credits">0</span>
+    <!-- STATS -->
+    <div class="stats-strip">
+      <div class="stat-pill">
+        <div class="stat-label">Credits</div>
+        <div class="stat-value" id="creditsDisplay">0</div>
+      </div>
+      <div class="stat-pill">
+        <div class="stat-label">Income / sec</div>
+        <div class="stat-value" id="ipsDisplay">0</div>
+      </div>
+      <div class="stat-pill">
+        <div class="stat-label">Drill Level</div>
+        <div class="stat-value" id="drillDisplay">1x</div>
+      </div>
+    </div>
+
+    <!-- MILESTONE PROGRESS -->
+    <div class="progress-card">
+      <div class="progress-header">
+        <span>Next Milestone: <strong id="milestoneLabel">1k Credits</strong></span>
+        <span id="milestonePercent">0%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="milestoneBar"></div>
+      </div>
+    </div>
+
+    <!-- BIG MINE BUTTON -->
+    <div class="primary-action">
+      <button class="big-button" onclick="mine()">
+        <div class="big-button-icon">⛏</div>
+        Tap to mine asteroid (+1)
+      </button>
+    </div>
+
+    <!-- SCROLLING CONTENT -->
+    <div class="scroll-area">
+      <div class="section-title">Production</div>
+
+      <div class="building-card">
+        <div class="icon-circle">🤖</div>
+        <div class="building-main">
+          <div class="building-top">
+            <div class="building-name">Auto-Miners</div>
+            <div class="building-qty" id="minersQty">x0</div>
+          </div>
+          <div class="building-sub">Robots that mine asteroids automatically. +1 / sec each.</div>
+          <div class="cost-row">
+            <span>Cost: <strong id="minerCost">50</strong></span>
+            <button class="buy-btn" onclick="buyMiner()">Buy</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="building-card">
+        <div class="icon-circle">🏭</div>
+        <div class="building-main">
+          <div class="building-top">
+            <div class="building-name">Refineries</div>
+            <div class="building-qty" id="refineryQty">x0</div>
+          </div>
+          <div class="building-sub">Refines raw ore into high-value alloys. +5 / sec each.</div>
+          <div class="cost-row">
+            <span>Cost: <strong id="refineryCost">500</strong></span>
+            <button class="buy-btn" onclick="buyRefinery()">Buy</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="building-card">
+        <div class="icon-circle">🚀</div>
+        <div class="building-main">
+          <div class="building-top">
+            <div class="building-name">Cargo Ships</div>
+            <div class="building-qty" id="shipQty">x0</div>
+          </div>
+          <div class="building-sub">Delivers goods across systems. +15 / sec each.</div>
+          <div class="cost-row">
+            <span>Cost: <strong id="shipCost">2,500</strong></span>
+            <button class="buy-btn" onclick="buyShip()">Buy</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-top:10px;">Global Upgrades</div>
+
+      <div class="building-card">
+        <div class="icon-circle">⚙️</div>
+        <div class="building-main">
+          <div class="building-top">
+            <div class="building-name">Mine Drill Mk II</div>
+          </div>
+          <div class="building-sub">Doubles all income each time you buy it.</div>
+          <div class="cost-row">
+            <span>Cost: <strong id="drillCost">1,000</strong></span>
+            <button class="buy-btn" onclick="buyDrill()">Upgrade</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="building-card">
+        <div class="icon-circle">💾</div>
+        <div class="building-main">
+          <div class="building-top">
+            <div class="building-name">Save Game</div>
+          </div>
+          <div class="building-sub">Your progress auto-saves, but you can force a save anytime.</div>
+          <div class="cost-row">
+            <span>Last Save: <strong id="lastSaveLabel">never</strong></span>
+            <button class="buy-btn" onclick="manualSave()">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-  <button onclick="mine()">Mine Asteroid (+1)</button>
-</div>
 
-<div class="card">
-  <h2>Upgrades</h2>
-
-  <div class="upgrade">
-    <div class="upgrade-title">Auto-Miner</div>
-    <div class="upgrade-cost">Generates +1/sec<br>Cost: <span id="minerCost">50</span></div>
-    <button onclick="buyMiner()">Buy Auto-Miner</button>
-  </div>
-
-  <div class="upgrade">
-    <div class="upgrade-title">Mine Drill Mk II</div>
-    <div class="upgrade-cost">Boost all mining by 2x<br>Cost: <span id="drillCost">500</span></div>
-    <button onclick="buyDrill()">Buy Drill Mk II</button>
+  <!-- BOTTOM NAV (visual only for now) -->
+  <div class="bottom-nav">
+    <div class="nav-item active">
+      <span>⛏</span>Main
+    </div>
+    <div class="nav-item">
+      <span>📈</span>Stats
+    </div>
+    <div class="nav-item">
+      <span>🌌</span>Galaxy
+    </div>
   </div>
 </div>
 
 <script>
-// GAME STATE
-let credits = Number(localStorage.getItem("credits") || 0);
-let miners = Number(localStorage.getItem("miners") || 0);
-let drillLevel = Number(localStorage.getItem("drill") || 1);
+// ========= GAME STATE =========
+let credits    = Number(localStorage.getItem("credits")   || 0);
+let miners     = Number(localStorage.getItem("miners")    || 0);
+let refineries = Number(localStorage.getItem("refineries")|| 0);
+let ships      = Number(localStorage.getItem("ships")     || 0);
+let drillLevel = Number(localStorage.getItem("drill")     || 1);
 
-let minerCost = 50;
-let drillCost = 500;
+let minerCost    = Number(localStorage.getItem("minerCost")    || 50);
+let refineryCost = Number(localStorage.getItem("refineryCost") || 500);
+let shipCost     = Number(localStorage.getItem("shipCost")     || 2500);
+let drillCost    = Number(localStorage.getItem("drillCost")    || 1000);
 
-// UPDATE UI
-function updateUI() {
-  document.getElementById("credits").textContent = credits;
-  document.getElementById("minerCost").textContent = minerCost;
-  document.getElementById("drillCost").textContent = drillCost;
+let lastSaveTime = Number(localStorage.getItem("lastSaveTime") || 0);
+
+// Milestones
+const milestoneSteps = [1000, 10000, 100000, 1000000];
+let currentMilestoneIndex = 0;
+
+// ========= UTILITIES =========
+function format(num) {
+  if (num < 1000) return Math.floor(num).toString();
+  const units = ["K","M","B","T"];
+  let unitIndex = -1;
+  while (num >= 1000 && unitIndex < units.length - 1) {
+    num /= 1000;
+    unitIndex++;
+  }
+  return num.toFixed(num < 10 ? 2 : 1) + units[unitIndex];
 }
 
-// SAVE
+function getIncomePerSec() {
+  const base = miners * 1 + refineries * 5 + ships * 15;
+  return base * drillLevel;
+}
+
+// ========= SAVE / LOAD =========
 function saveGame() {
   localStorage.setItem("credits", credits);
   localStorage.setItem("miners", miners);
+  localStorage.setItem("refineries", refineries);
+  localStorage.setItem("ships", ships);
   localStorage.setItem("drill", drillLevel);
+  localStorage.setItem("minerCost", minerCost);
+  localStorage.setItem("refineryCost", refineryCost);
+  localStorage.setItem("shipCost", shipCost);
+  localStorage.setItem("drillCost", drillCost);
+  lastSaveTime = Date.now();
+  localStorage.setItem("lastSaveTime", lastSaveTime);
+  updateLastSaveLabel();
 }
 
-// ACTIONS
+function updateLastSaveLabel() {
+  const label = document.getElementById("lastSaveLabel");
+  if (!lastSaveTime) {
+    label.textContent = "never";
+    return;
+  }
+  const diffSec = Math.floor((Date.now() - lastSaveTime) / 1000);
+  if (diffSec < 10) label.textContent = "just now";
+  else if (diffSec < 60) label.textContent = diffSec + "s ago";
+  else {
+    const mins = Math.floor(diffSec / 60);
+    label.textContent = mins + "m ago";
+  }
+}
+
+// ========= UI UPDATE =========
+let displayedCredits = credits;
+
+function updateUI() {
+  // Stats
+  document.getElementById("minersQty").textContent   = "x" + miners;
+  document.getElementById("refineryQty").textContent = "x" + refineries;
+  document.getElementById("shipQty").textContent     = "x" + ships;
+
+  document.getElementById("minerCost").textContent    = format(minerCost);
+  document.getElementById("refineryCost").textContent = format(refineryCost);
+  document.getElementById("shipCost").textContent     = format(shipCost);
+  document.getElementById("drillCost").textContent    = format(drillCost);
+
+  document.getElementById("ipsDisplay").textContent   = format(getIncomePerSec());
+  document.getElementById("drillDisplay").textContent = drillLevel + "x";
+
+  // Milestone
+  const target = milestoneSteps[currentMilestoneIndex] || milestoneSteps[milestoneSteps.length-1]*10;
+  document.getElementById("milestoneLabel").textContent = format(target) + " Credits";
+  const pct = Math.min(100, Math.floor((credits / target) * 100));
+  document.getElementById("milestonePercent").textContent = pct + "%";
+  document.getElementById("milestoneBar").style.width = pct + "%";
+
+  updateLastSaveLabel();
+}
+
+// Smooth credits animation
+function animateCredits() {
+  const diff = credits - displayedCredits;
+  displayedCredits += diff * 0.18;
+  if (Math.abs(diff) < 0.2) displayedCredits = credits;
+  document.getElementById("creditsDisplay").textContent =
+    format(displayedCredits);
+  requestAnimationFrame(animateCredits);
+}
+
+// ========= ACTIONS =========
 function mine() {
   credits += 1 * drillLevel;
-  saveGame();
   updateUI();
+  saveGame();
 }
 
 function buyMiner() {
   if (credits >= minerCost) {
     credits -= minerCost;
     miners++;
-    minerCost = Math.floor(minerCost * 1.5);
-    saveGame();
+    minerCost = Math.floor(minerCost * 1.45);
     updateUI();
+    saveGame();
+  }
+}
+
+function buyRefinery() {
+  if (credits >= refineryCost) {
+    credits -= refineryCost;
+    refineries++;
+    refineryCost = Math.floor(refineryCost * 1.55);
+    updateUI();
+    saveGame();
+  }
+}
+
+function buyShip() {
+  if (credits >= shipCost) {
+    credits -= shipCost;
+    ships++;
+    shipCost = Math.floor(shipCost * 1.6);
+    updateUI();
+    saveGame();
   }
 }
 
@@ -123,27 +629,35 @@ function buyDrill() {
   if (credits >= drillCost) {
     credits -= drillCost;
     drillLevel *= 2;
-    drillCost = Math.floor(drillCost * 2.5);
-    saveGame();
+    drillCost = Math.floor(drillCost * 2.4);
     updateUI();
+    saveGame();
   }
 }
 
-// AUTO-GENERATE
-setInterval(() => {
-  credits += miners * drillLevel;
+function manualSave() {
   saveGame();
-  updateUI();
+}
+
+// ========= IDLE LOOP =========
+setInterval(() => {
+  const income = getIncomePerSec();
+  if (income > 0) {
+    credits += income;
+    updateUI();
+    saveGame();
+  }
 }, 1000);
 
-// INITIAL LOAD
+// ========= INIT =========
 updateUI();
+animateCredits();
+updateLastSaveLabel();
 
-// REGISTER SERVICE WORKER
+// ========= SERVICE WORKER =========
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js");
 }
 </script>
-
 </body>
 </html>
